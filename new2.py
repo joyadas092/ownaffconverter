@@ -48,6 +48,23 @@ def ekconvert(text):
     data_value = response_dict.get('data')
 
     return(data_value)
+
+def extract_link_from_text(text):
+    # Regular expression pattern to match a URL
+    url_pattern = r'https?://\S+'
+    urls = re.findall(url_pattern, text)
+    return urls[0] if urls else None
+
+def unshorten_url(short_url):
+    unshortener = UnshortenIt()
+    shorturi = unshortener.unshorten(short_url)
+    # print(shorturi)
+    return shorturi
+
+@bot.route('/')
+async def hello():
+    return 'Hello, world!'
+
 @app.on_message(filters.command("start") & filters.private)
 async def start(client, message):
     await app.send_message(message.chat.id,"ahaann")
@@ -61,15 +78,17 @@ async def handle_text(client, message):
         [[InlineKeyboardButton("Join Deals HUB", url="https://t.me/addlist/FYEMFZCWeTY2ZmE1")],
          [InlineKeyboardButton("Join Main Channel", url="https://t.me/Deals_and_Discounts_Channel/37444")]
          ])
-    if message.photo:
-        text = message.caption if message.caption else message.text
-        inputvalue = text
+    # if message.photo:
+    #     text = message.caption if message.caption else message.text
+    #     inputvalue = text
+
 
     # elif message.text:
     #     inputvalue = message.text
     # # print(message)
     #     # print(message.entities)
     # # print(inputvalue)
+    inputvalue = ''
     hyerlinkurl=[]
     new_entities=[]
 
@@ -78,58 +97,81 @@ async def handle_text(client, message):
             new_entities.append(entity)
             if entity.url is not None:
                 hyerlinkurl.append(entity.url)
-        # print(hyerlinkurl)
-        affurls=[]
-        for url in hyerlinkurl:
-            affurls.append(ekconvert(url))
-        n = 0
-        for entity in new_entities:
-            if entity.type == enums.MessageEntityType.TEXT_LINK:
+                inputvalue = entity.url
+        if inputvalue=='':
+            text = message.text
+            inputvalue = text
+            msgtext=ekconvert(inputvalue)
+            await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
+            await app.send_message(chat_id=-1002110764294, text=msgtext,
+                                   disable_web_page_preview=True)
+        else:
+            affurls=[]
+            for url in hyerlinkurl:
+                affurls.append(ekconvert(url))
+            n = 0
+            for entity in new_entities:
+                if entity.type == enums.MessageEntityType.TEXT_LINK:
 
-                entity.url=affurls[n]
-                n=n+1
-            # print(entity)
-        await app.send_message(message.chat.id, message.text,entities=new_entities,disable_web_page_preview=True)
-        await app.send_message(chat_id=-1002110764294, text=message.text, entities=new_entities, disable_web_page_preview=True)
+                    entity.url=affurls[n]
+                    n=n+1
+                # print(entity)
+            await app.send_message(message.chat.id, message.text,entities=new_entities,disable_web_page_preview=True)
+            await app.send_message(chat_id=-1002110764294, text=message.text, entities=new_entities, disable_web_page_preview=True)
 
 
     if message.caption_entities:
-        for entity in message.caption_entities:
-            new_entities.append(entity)
-            if entity.url is not None:
-                hyerlinkurl.append(entity.url)
-        # print(hyerlinkurl)
-
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             # app.download_media(message)
             await message.download(file_name=temp_file.name)
 
             with open(temp_file.name, 'rb') as f:
                 photo_bytes = BytesIO(f.read())
-        affurls=[]
-        for url in hyerlinkurl:
-            affurls.append(ekconvert(url))
-            # affurl=ekconvert(url)
-            # # print(affurl)
-            # affurls.append()
-        # print(affurls)
-        # modified_caption = message.caption
-        # for url in affurl:
-        #     count=1
-        #     modified_caption = modified_caption.replace("Buy Now", f'<a href="{url}">Buy now</a>', 1)
-        #     # print(modified_caption)
-        #     # count==count+1
-        n = 0
-        for entity in new_entities:
-            if entity.type == enums.MessageEntityType.TEXT_LINK:
 
-                entity.url=affurls[n]
-                n=n+1
-            # print(entity)
-        await app.send_photo(message.chat.id, photo=photo_bytes,caption=inputvalue,caption_entities=new_entities)
-        await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=inputvalue, caption_entities=new_entities,reply_markup=Promo)
+        for entity in message.caption_entities:
+            new_entities.append(entity)
+            if entity.url is not None:
+                hyerlinkurl.append(entity.url)
+                inputvalue = entity.url
+        if inputvalue == '':
+            text = message.caption if message.caption else message.text
+            inputvalue = text
+            msgtext = ekconvert(inputvalue)
+            await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext,
+                                 )
+            await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=msgtext,reply_markup=Promo)
+        # print(hyerlinkurl)
+
+        else:
+            affurls=[]
+            for url in hyerlinkurl:
+                affurls.append(ekconvert(url))
+
+            n = 0
+            for entity in new_entities:
+                if entity.type == enums.MessageEntityType.TEXT_LINK:
+                    entity.url=affurls[n]
+                    n=n+1
+                # print(entity)
+            await app.send_photo(message.chat.id, photo=photo_bytes,caption=message.caption,caption_entities=new_entities)
+            await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=message.caption, caption_entities=new_entities,reply_markup=Promo)
 
 
 
+@bot.before_serving
+async def before_serving():
+    await app.start()
+
+
+@bot.after_serving
+async def after_serving():
+    await app.stop()
+
+
+# if __name__ == '__main__':
+
+    # bot.run(port=8000)
 if __name__ == '__main__':
-    app.run()
+    loop = asyncio.get_event_loop()
+    loop.create_task(bot.run_task(host='0.0.0.0', port=8090))
+    loop.run_forever()
