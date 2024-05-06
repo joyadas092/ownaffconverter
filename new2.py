@@ -14,8 +14,8 @@ import asyncio
 from quart import Quart
 from unshortenit import UnshortenIt
 
-api_id= '26566076'
-api_hash= '40ce27837b95819c42cac67b46a2dc2b'
+api_id= '23194318'
+api_hash= '87b5e87cc338e36268e7d1992c9dce2d'
 bot_token='6866466311:AAG3EnZWlDSTWNqstw_F52a2Uw8ULbJ8Fr0'
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 apitoken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2M2U2MjEwNjYwOWU1YWY4ZTc4OTU2NTEiLCJlYXJua2FybyI6IjI1MjM2ODEiLCJpYXQiOjE3MTQzMzcxMDZ9.WOP7a-VJpEvg5p1sOpujkFJlcGjk50rq55ixeyHunK4'
