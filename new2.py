@@ -14,8 +14,8 @@ import asyncio
 from quart import Quart
 from unshortenit import UnshortenIt
 
-api_id= '23194318'
-api_hash= '87b5e87cc338e36268e7d1992c9dce2d'
+api_id= '26566076'
+api_hash= '40ce27837b95819c42cac67b46a2dc2b'
 bot_token='6866466311:AAG3EnZWlDSTWNqstw_F52a2Uw8ULbJ8Fr0'
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 apitoken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2M2U2MjEwNjYwOWU1YWY4ZTc4OTU2NTEiLCJlYXJua2FybyI6IjI1MjM2ODEiLCJpYXQiOjE3MTQzMzcxMDZ9.WOP7a-VJpEvg5p1sOpujkFJlcGjk50rq55ixeyHunK4'
@@ -32,8 +32,7 @@ def ekconvert(text):
     # inputtext = input('enter deal: ')
     payload = json.dumps({
         "deal": f"{text}",
-        "convert_option": "convert_only",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+        "convert_option": "convert_only"
     })
     headers = {
         'Authorization': f'Bearer {apitoken}',
@@ -71,7 +70,7 @@ async def start(client, message):
     await app.send_message(message.chat.id,"ahaann")
 
 
-@app.on_message(filters.chat(-1002060929372))
+@app.on_message(filters.chat(-1002060929372)|filters.user(5886397642))
 async def handle_text(client, message):
     # app.set_parse_mode(enums.ParseMode.HTML)
     # print(message)
@@ -79,84 +78,47 @@ async def handle_text(client, message):
         [[InlineKeyboardButton("Join Deals HUB", url="https://t.me/addlist/FYEMFZCWeTY2ZmE1")],
          [InlineKeyboardButton("Join Main Channel", url="https://t.me/Deals_and_Discounts_Channel/37444")]
          ])
-    # if message.photo:
-    #     text = message.caption if message.caption else message.text
-    #     inputvalue = text
+    if message.photo:
+        text = message.caption if message.caption else message.text
+        inputvalue = text
+        # print(message.chat.id)
 
-
-    # elif message.text:
-    #     inputvalue = message.text
-    # # print(message)
-    #     # print(message.entities)
-    # # print(inputvalue)
-    inputvalue = ''
-    hyerlinkurl=[]
-    new_entities=[]
-
-    if message.entities:
-        for entity in message.entities:
-            new_entities.append(entity)
+        hyperlinkurl = []
+        for entity in message.caption_entities:
+            # new_entities.append(entity)
             if entity.url is not None:
-                hyerlinkurl.append(entity.url)
-                inputvalue = entity.url
-        if inputvalue=='':
-            text = message.text
-            inputvalue = text
-            msgtext=ekconvert(inputvalue)
-            await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
-            await app.send_message(chat_id=-1002110764294, text=msgtext,
-                                   disable_web_page_preview=True)
-        else:
-            affurls=[]
-            for url in hyerlinkurl:
-                affurls.append(ekconvert(url))
-            n = 0
-            for entity in new_entities:
-                if entity.type == enums.MessageEntityType.TEXT_LINK:
+                hyperlinkurl.append(entity.url)
+        pattern = re.compile(r'Buy Now')
 
-                    entity.url=affurls[n]
-                    n=n+1
-                # print(entity)
-            await app.send_message(message.chat.id, message.text,entities=new_entities,disable_web_page_preview=True)
-            await app.send_message(chat_id=-1002110764294, text=message.text, entities=new_entities, disable_web_page_preview=True)
-
-
-    if message.caption_entities:
+        inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
+        # print(inputvalue)
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             # app.download_media(message)
             await message.download(file_name=temp_file.name)
 
             with open(temp_file.name, 'rb') as f:
                 photo_bytes = BytesIO(f.read())
+        msgtext = ekconvert(inputvalue)
+        await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
+        await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
+                            reply_markup=Promo)
 
-        for entity in message.caption_entities:
-            new_entities.append(entity)
+    elif message.text:
+        inputvalue = message.text
+
+        hyperlinkurl = []
+        for entity in message.entities:
+            # new_entities.append(entity)
             if entity.url is not None:
-                hyerlinkurl.append(entity.url)
-                inputvalue = entity.url
-        if inputvalue == '':
-            text = message.caption if message.caption else message.text
-            inputvalue = text
-            msgtext = ekconvert(inputvalue)
-            await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext,
-                                 )
-            await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=msgtext,reply_markup=Promo)
-        # print(hyerlinkurl)
+                hyperlinkurl.append(entity.url)
+        pattern = re.compile(r'Buy Now')
 
-        else:
-            affurls=[]
-            for url in hyerlinkurl:
-                affurls.append(ekconvert(url))
+        inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
+        msgtext=ekconvert(inputvalue)
 
-            n = 0
-            for entity in new_entities:
-                if entity.type == enums.MessageEntityType.TEXT_LINK:
-                    entity.url=affurls[n]
-                    n=n+1
-                # print(entity)
-            await app.send_photo(message.chat.id, photo=photo_bytes,caption=message.caption,caption_entities=new_entities)
-            await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=message.caption, caption_entities=new_entities,reply_markup=Promo)
-
+        await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
+        await app.send_message(chat_id=-1002110764294, text=f'<b>{msgtext}</b>',
+                               disable_web_page_preview=True)
 
 
 @bot.before_serving
@@ -168,11 +130,10 @@ async def before_serving():
 async def after_serving():
     await app.stop()
 
-
 # if __name__ == '__main__':
 
     # bot.run(port=8000)
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    loop.create_task(bot.run_task(host='0.0.0.0', port=8080))
+    loop.create_task(bot.run_task(host='0.0.0.0', port=8090))
     loop.run_forever()
