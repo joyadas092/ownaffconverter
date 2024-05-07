@@ -91,6 +91,11 @@ async def handle_text(client, message):
         pattern = re.compile(r'Buy Now')
 
         inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
+        if "😱 Deal Time" in inputvalue:
+        # Remove the part
+            inputvalue = inputvalue.split("😱 Deal Time")[0]
+
+        
         # print(inputvalue)
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             # app.download_media(message)
@@ -114,6 +119,9 @@ async def handle_text(client, message):
         pattern = re.compile(r'Buy Now')
 
         inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
+        if "😱 Deal Time" in inputvalue:
+        # Remove the part
+            inputvalue = inputvalue.split("😱 Deal Time")[0]
         msgtext=ekconvert(inputvalue)
 
         await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
