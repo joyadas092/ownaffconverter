@@ -55,13 +55,21 @@ def extract_link_from_text(text):
     # Regular expression pattern to match a URL
     url_pattern = r'https?://\S+'
     urls = re.findall(url_pattern, text)
-    return urls[0] if urls else None
+    return urls
 
 def unshorten_url(short_url):
     unshortener = UnshortenIt()
     shorturi = unshortener.unshorten(short_url)
     # print(shorturi)
     return shorturi
+def extp(text):
+    unshortened_urls = {}
+    urls = extract_link_from_text(text)
+    for url in urls:
+        unshortened_urls[url] = unshorten_url(url)
+    for original_url, unshortened_url in unshortened_urls.items():
+        text = text.replace(original_url, unshortened_url)
+    return text
 
 @bot.route('/')
 async def hello():
@@ -96,7 +104,8 @@ async def handle_text(client, message):
         if "😱 Deal Time" in inputvalue:
         # Remove the part
             inputvalue = inputvalue.split("😱 Deal Time")[0]
-
+        if 'extp' in inputvalue:
+            inputvalue=extp(inputvalue)
         
         # print(inputvalue)
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -124,6 +133,8 @@ async def handle_text(client, message):
         if "😱 Deal Time" in inputvalue:
         # Remove the part
             inputvalue = inputvalue.split("😱 Deal Time")[0]
+        if 'extp' in inputvalue:
+            inputvalue=extp(inputvalue)
         msgtext=ekconvert(inputvalue)
 
         await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
