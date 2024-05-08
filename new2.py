@@ -46,8 +46,10 @@ def ekconvert(text):
 
     # Extract the "data" part from the dictionary
     data_value = response_dict.get('data')
-
-    return(data_value)
+    if 'We could not locate an affiliate URL to send' in data_value:
+        return None
+    else:
+        return(data_value)
 
 def extract_link_from_text(text):
     # Regular expression pattern to match a URL
