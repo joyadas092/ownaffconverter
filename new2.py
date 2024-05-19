@@ -104,7 +104,7 @@ async def handle_text(client, message):
         if "😱 Deal Time" in inputvalue:
         # Remove the part
             inputvalue = inputvalue.split("😱 Deal Time")[0]
-        if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
+        if 'extp' in inputvalue:
             inputvalue=extp(inputvalue)
         
         # print(inputvalue)
