@@ -26,30 +26,47 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 source_channel_id = [-1002110764294]  # Replace with the source channel ID
-def ekconvert(text):
-    url = "https://ekaro-api.affiliaters.in/api/converter/public"
+def remove_amazon_affiliate_parameters(url):
+    parsed_url = urlparse(url)
+    # print(parsed_url)
+    query_params = parse_qs(parsed_url.query)
+    # print('query_params: '+str(query_params))
+    if 'ru' in query_params:
+        query_params={key: value for key, value in query_params.items() if key == 'ru'}
+        parsed_url = urlparse(query_params['ru'][0])
+        query_params = parse_qs(parsed_url.query)
 
-    # inputtext = input('enter deal: ')
-    payload = json.dumps({
-        "deal": f"{text}",
-        "convert_option": "convert_only"
-    })
-    headers = {
-        'Authorization': f'Bearer {apitoken}',
-        'Content-Type': 'application/json'
-    }
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+    # List of Amazon affiliate parameters to remove
+    amazon_affiliate_params = ['tag', 'ref', 'linkCode', 'camp', 'creative','linkId','ref_','language','content-id','_encoding']
 
-    # print(response.text)
-    response_dict = json.loads(response.text)
+    # Remove the Amazon affiliate parameters from the query parameters
+    cleaned_query_params = {key: value for key, value in query_params.items() if key not in amazon_affiliate_params}
+    # Rebuild the URL with the cleaned query parameters
+    cleaned_url = urlunparse(parsed_url._replace(query='&'.join([f'{key}={value[0]}' for key, value in cleaned_query_params.items()])))
 
-    # Extract the "data" part from the dictionary
-    data_value = response_dict.get('data')
-    if 'We could not locate an affiliate URL to send' in data_value:
-        return None
-    else:
-        return(data_value)
+    return cleaned_url
+def create_amazon_affiliate_url(normal_url, affiliate_tag):
+    if "amazon" not in normal_url:
+        return "Not a valid Amazon Product link."
+
+    if not affiliate_tag:
+        return "Please provide a valid affiliate tag."
+
+    # Check if the URL already has query parameters
+    separator = '&' if '?' in normal_url else '?'
+
+    # Append the affiliate tag to the URL
+    affiliate_url = f"{normal_url}{separator}tag={affiliate_tag}"
+
+    return affiliate_url
+def tiny(long_url):
+    url = 'http://tinyurl.com/api-create.php?url='
+
+    response = requests.get(url+long_url)
+    short_url = response.text
+    return short_url
+
 
 def extract_link_from_text(text):
     # Regular expression pattern to match a URL
@@ -70,6 +87,42 @@ def extp(text):
     for original_url, unshortened_url in unshortened_urls.items():
         text = text.replace(original_url, unshortened_url)
     return text
+
+def ekconvert(text):
+    if 'amazon' in text or 'tinyurl' in text or 'amzn' in text:
+        unshortened_urls = {}
+        urls = extract_link_from_text(text)
+        for url in urls:
+            unshortened_urls[url] = tiny(create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(url)),'divyadeal-21'))
+        for original_url, unshortened_url in unshortened_urls.items():
+            text = text.replace(original_url, unshortened_url)
+        return text
+
+    else:
+
+        url = "https://ekaro-api.affiliaters.in/api/converter/public"
+
+        # inputtext = input('enter deal: ')
+        payload = json.dumps({
+            "deal": f"{text}",
+            "convert_option": "convert_only"
+        })
+        headers = {
+            'Authorization': f'Bearer {apitoken}',
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+        # print(response.text)
+        response_dict = json.loads(response.text)
+
+        # Extract the "data" part from the dictionary
+        data_value = response_dict.get('data')
+        if 'We could not locate an affiliate URL to send' in data_value:
+            return None
+        else:
+            return(data_value)
 
 @bot.route('/')
 async def hello():
@@ -101,24 +154,23 @@ async def handle_text(client, message):
         pattern = re.compile(r'Buy Now')
 
         inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
-        if 'amazon' not in inputvalue or 'tinyurl' not in inputvalue or 't.me' not in inputvalue:
-            if "😱 Deal Time" in inputvalue:
-            # Remove the part
-                inputvalue = inputvalue.split("😱 Deal Time")[0]
-            if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
-                inputvalue=extp(inputvalue)
-            
-            # print(inputvalue)
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                # app.download_media(message)
-                await message.download(file_name=temp_file.name)
-    
-                with open(temp_file.name, 'rb') as f:
-                    photo_bytes = BytesIO(f.read())
-            msgtext = ekconvert(inputvalue)
-            await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
-            await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
-                                reply_markup=Promo)
+        if "😱 Deal Time" in inputvalue:
+        # Remove the part
+            inputvalue = inputvalue.split("😱 Deal Time")[0]
+        if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
+            inputvalue=extp(inputvalue)
+        
+        # print(inputvalue)
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            # app.download_media(message)
+            await message.download(file_name=temp_file.name)
+
+            with open(temp_file.name, 'rb') as f:
+                photo_bytes = BytesIO(f.read())
+        msgtext = ekconvert(inputvalue)
+        await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
+        await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
+                            reply_markup=Promo)
 
     elif message.text:
         inputvalue = message.text
@@ -132,17 +184,16 @@ async def handle_text(client, message):
 
         inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
 
-        if 'amazon' not in inputvalue or 'tinyurl' not in inputvalue or 't.me' not in inputvalue:
-            if "😱 Deal Time" in inputvalue:
-            # Remove the part
-                inputvalue = inputvalue.split("😱 Deal Time")[0]
-            if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
-                inputvalue=extp(inputvalue)
-            msgtext=ekconvert(inputvalue)
-    
-            await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
-            await app.send_message(chat_id=-1002110764294, text=f'<b>{msgtext}</b>',
-                                   disable_web_page_preview=True)
+        if "😱 Deal Time" in inputvalue:
+        # Remove the part
+            inputvalue = inputvalue.split("😱 Deal Time")[0]
+        if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
+            inputvalue=extp(inputvalue)
+        msgtext=ekconvert(inputvalue)
+
+        await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
+        await app.send_message(chat_id=-1002110764294, text=f'<b>{msgtext}</b>',
+                               disable_web_page_preview=True)
 
 
 @bot.before_serving
