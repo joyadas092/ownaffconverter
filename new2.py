@@ -88,41 +88,44 @@ def extp(text):
         text = text.replace(original_url, unshortened_url)
     return text
 
-def ekconvert(text):
-    if 'amazon' in text or 'tinyurl' in text or 'amzn' in text:
-        unshortened_urls = {}
-        urls = extract_link_from_text(text)
-        for url in urls:
-            unshortened_urls[url] = tiny(create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(url)),'divyadeal-21'))
-        for original_url, unshortened_url in unshortened_urls.items():
-            text = text.replace(original_url, unshortened_url)
-        return text
+def earnkaroapi(text):
+    url = "https://ekaro-api.affiliaters.in/api/converter/public"
 
+    # inputtext = input('enter deal: ')
+    payload = json.dumps({
+        "deal": f"{text}",
+        "convert_option": "convert_only"
+    })
+    headers = {
+        'Authorization': f'Bearer {apitoken}',
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    # print(response.text)
+    response_dict = json.loads(response.text)
+
+    # Extract the "data" part from the dictionary
+    data_value = response_dict.get('data')
+    if 'We could not locate an affiliate URL to send' in data_value:
+        return 'None'
     else:
+        return (data_value)
 
-        url = "https://ekaro-api.affiliaters.in/api/converter/public"
 
-        # inputtext = input('enter deal: ')
-        payload = json.dumps({
-            "deal": f"{text}",
-            "convert_option": "convert_only"
-        })
-        headers = {
-            'Authorization': f'Bearer {apitoken}',
-            'Content-Type': 'application/json'
-        }
+def ekconvert(text):
 
-        response = requests.request("POST", url, headers=headers, data=payload)
-
-        # print(response.text)
-        response_dict = json.loads(response.text)
-
-        # Extract the "data" part from the dictionary
-        data_value = response_dict.get('data')
-        if 'We could not locate an affiliate URL to send' in data_value:
-            return None
+    unshortened_urls = {}
+    urls = extract_link_from_text(text)
+    for url in urls:
+        if 'amazon' in url or 'tinyurl' in url or 'amzn' in url:
+            unshortened_urls[url] = tiny(create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(url)),'divyadeal-21'))
         else:
-            return(data_value)
+            unshortened_urls[url]=earnkaroapi(url)
+    for original_url, unshortened_url in unshortened_urls.items():
+        text = text.replace(original_url, unshortened_url)
+    return text
 
 @bot.route('/')
 async def hello():
