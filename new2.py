@@ -6,7 +6,7 @@ import requests
 from pyrogram import Client, filters, enums
 from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid
 import logging
-
+from urllib.parse import urlunparse, parse_qs, urlparse
 from pyrogram.raw.types import MessageEntityUrl
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import re
