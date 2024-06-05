@@ -101,23 +101,24 @@ async def handle_text(client, message):
         pattern = re.compile(r'Buy Now')
 
         inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
-        if "😱 Deal Time" in inputvalue:
-        # Remove the part
-            inputvalue = inputvalue.split("😱 Deal Time")[0]
-        if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
-            inputvalue=extp(inputvalue)
-        
-        # print(inputvalue)
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            # app.download_media(message)
-            await message.download(file_name=temp_file.name)
-
-            with open(temp_file.name, 'rb') as f:
-                photo_bytes = BytesIO(f.read())
-        msgtext = ekconvert(inputvalue)
-        await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
-        await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
-                            reply_markup=Promo)
+        if 'amazon' not in inputvalue or 'tinyurl' not in inputvalue or 't.me' not in inputvalue:
+            if "😱 Deal Time" in inputvalue:
+            # Remove the part
+                inputvalue = inputvalue.split("😱 Deal Time")[0]
+            if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
+                inputvalue=extp(inputvalue)
+            
+            # print(inputvalue)
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                # app.download_media(message)
+                await message.download(file_name=temp_file.name)
+    
+                with open(temp_file.name, 'rb') as f:
+                    photo_bytes = BytesIO(f.read())
+            msgtext = ekconvert(inputvalue)
+            await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
+            await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
+                                reply_markup=Promo)
 
     elif message.text:
         inputvalue = message.text
@@ -130,16 +131,18 @@ async def handle_text(client, message):
         pattern = re.compile(r'Buy Now')
 
         inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
-        if "😱 Deal Time" in inputvalue:
-        # Remove the part
-            inputvalue = inputvalue.split("😱 Deal Time")[0]
-        if 'extp' in inputvalue:
-            inputvalue=extp(inputvalue)
-        msgtext=ekconvert(inputvalue)
 
-        await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
-        await app.send_message(chat_id=-1002110764294, text=f'<b>{msgtext}</b>',
-                               disable_web_page_preview=True)
+        if 'amazon' not in inputvalue or 'tinyurl' not in inputvalue or 't.me' not in inputvalue:
+            if "😱 Deal Time" in inputvalue:
+            # Remove the part
+                inputvalue = inputvalue.split("😱 Deal Time")[0]
+            if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
+                inputvalue=extp(inputvalue)
+            msgtext=ekconvert(inputvalue)
+    
+            await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
+            await app.send_message(chat_id=-1002110764294, text=f'<b>{msgtext}</b>',
+                                   disable_web_page_preview=True)
 
 
 @bot.before_serving
