@@ -177,6 +177,8 @@ async def handle_text(client, message):
 
     elif message.text:
         inputvalue = message.text
+        if '@Auto_Forward_Messages_Bot' in inputvalue:
+            return None
 
         hyperlinkurl = []
         for entity in message.entities:
