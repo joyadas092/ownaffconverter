@@ -220,7 +220,7 @@ async def handle_text(client, message):
     if message.video:
         if message.caption:
             link=unshorten_url(extract_link_from_text(message.caption)[0])
-            link=create_amazon_affiliate_url(remove_amazon_affiliate_parameters(link),'divyadeal-21')
+            link=ekconvert(link)
         else
             link='https://amzn.to/3Vgst6o'
 
