@@ -221,7 +221,7 @@ async def handle_text(client, message):
         if message.caption:
             link=unshorten_url(extract_link_from_text(message.caption)[0])
             link=ekconvert(link)
-        else
+        else:
             link='https://amzn.to/3Vgst6o'
 
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
