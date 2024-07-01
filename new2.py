@@ -235,7 +235,7 @@ async def handle_text(client, message):
                 temp_video_file.seek(0)
 
         # await app.send_video(chat_id=message.chat.id, video=temp_video_file.name, caption=message.caption,reply_markup=Promo)
-        await app.send_video(chat_id=-1002194362897, video=temp_video_file.name, caption=f"<b>PRODUCT LINK: \n\n{link}</b>",reply_markup=Promo2)
+        await app.send_video(chat_id=-1002194362897, video=temp_video_file.name, caption=f"<b>PRODUCT LINK: \n\n{link}</b>\n\n#amazon #flipkart #meesho",reply_markup=Promo2)
 
 
 
