@@ -14,11 +14,11 @@ import asyncio
 from quart import Quart
 from unshortenit import UnshortenIt
 
-api_id= '26566076'
-api_hash= '40ce27837b95819c42cac67b46a2dc2b'
-bot_token='6866466311:AAG3EnZWlDSTWNqstw_F52a2Uw8ULbJ8Fr0'
+api_id = '26566076'
+api_hash = '40ce27837b95819c42cac67b46a2dc2b'
+bot_token = '6866466311:AAG3EnZWlDSTWNqstw_F52a2Uw8ULbJ8Fr0'
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
-apitoken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2M2U2MjEwNjYwOWU1YWY4ZTc4OTU2NTEiLCJlYXJua2FybyI6IjI1MjM2ODEiLCJpYXQiOjE3MTQzMzcxMDZ9.WOP7a-VJpEvg5p1sOpujkFJlcGjk50rq55ixeyHunK4'
+apitoken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2M2U2MjEwNjYwOWU1YWY4ZTc4OTU2NTEiLCJlYXJua2FybyI6IjI1MjM2ODEiLCJpYXQiOjE3MTQzMzcxMDZ9.WOP7a-VJpEvg5p1sOpujkFJlcGjk50rq55ixeyHunK4'
 
 # Define a handler for the /start command
 bot = Quart(__name__)
@@ -26,26 +26,31 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 source_channel_id = [-1002110764294]  # Replace with the source channel ID
+
+
 def remove_amazon_affiliate_parameters(url):
     parsed_url = urlparse(url)
     # print(parsed_url)
     query_params = parse_qs(parsed_url.query)
     # print('query_params: '+str(query_params))
     if 'ru' in query_params:
-        query_params={key: value for key, value in query_params.items() if key == 'ru'}
+        query_params = {key: value for key, value in query_params.items() if key == 'ru'}
         parsed_url = urlparse(query_params['ru'][0])
         query_params = parse_qs(parsed_url.query)
 
-
     # List of Amazon affiliate parameters to remove
-    amazon_affiliate_params = ['tag', 'ref', 'linkCode', 'camp', 'creative','linkId','ref_','language','content-id','_encoding']
+    amazon_affiliate_params = ['tag', 'ref', 'linkCode', 'camp', 'creative', 'linkId', 'ref_', 'language', 'content-id',
+                               '_encoding','dev']
 
     # Remove the Amazon affiliate parameters from the query parameters
     cleaned_query_params = {key: value for key, value in query_params.items() if key not in amazon_affiliate_params}
     # Rebuild the URL with the cleaned query parameters
-    cleaned_url = urlunparse(parsed_url._replace(query='&'.join([f'{key}={value[0]}' for key, value in cleaned_query_params.items()])))
+    cleaned_url = urlunparse(
+        parsed_url._replace(query='&'.join([f'{key}={value[0]}' for key, value in cleaned_query_params.items()])))
 
     return cleaned_url
+
+
 def create_amazon_affiliate_url(normal_url, affiliate_tag):
     if "amazon" not in normal_url:
         return "Not a valid Amazon Product link."
@@ -60,10 +65,12 @@ def create_amazon_affiliate_url(normal_url, affiliate_tag):
     affiliate_url = f"{normal_url}{separator}tag={affiliate_tag}"
 
     return affiliate_url
+
+
 def tiny(long_url):
     url = 'http://tinyurl.com/api-create.php?url='
 
-    response = requests.get(url+long_url)
+    response = requests.get(url + long_url)
     short_url = response.text
     return short_url
 
@@ -74,11 +81,14 @@ def extract_link_from_text(text):
     urls = re.findall(url_pattern, text)
     return urls
 
+
 def unshorten_url(short_url):
     unshortener = UnshortenIt()
     shorturi = unshortener.unshorten(short_url)
     # print(shorturi)
     return shorturi
+
+
 def extp(text):
     unshortened_urls = {}
     urls = extract_link_from_text(text)
@@ -87,6 +97,7 @@ def extp(text):
     for original_url, unshortened_url in unshortened_urls.items():
         text = text.replace(original_url, unshortened_url)
     return text
+
 
 def earnkaroapi(text):
     url = "https://ekaro-api.affiliaters.in/api/converter/public"
@@ -115,35 +126,42 @@ def earnkaroapi(text):
 
 
 def ekconvert(text):
-
     unshortened_urls = {}
     urls = extract_link_from_text(text)
     for url in urls:
         if 'amazon' in url or 'tinyurl' in url or 'amzn' in url:
-            unshortened_urls[url] = tiny(create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(url)),'divyadeal-21'))
+            unshortened_urls[url] = tiny(
+                create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(url)), 'divyadeal-21'))
         else:
-            unshortened_urls[url]=earnkaroapi(url)
+            unshortened_urls[url] = earnkaroapi(url)
     for original_url, unshortened_url in unshortened_urls.items():
         text = text.replace(original_url, unshortened_url)
     return text
+
 
 @bot.route('/')
 async def hello():
     return 'Hello, world!'
 
+
 @app.on_message(filters.command("start") & filters.private)
 async def start(client, message):
-    await app.send_message(message.chat.id,"ahaann")
+    await app.send_message(message.chat.id, "ahaann")
 
 
-@app.on_message(filters.chat(-1002060929372)|filters.user(5886397642))
+@app.on_message(filters.chat(-1002060929372) | filters.user(5886397642))
 async def handle_text(client, message):
     # app.set_parse_mode(enums.ParseMode.HTML)
     # print(message)
     Promo = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("Join Deals HUB", url="https://t.me/addlist/FYEMFZCWeTY2ZmE1")],
-         [InlineKeyboardButton("Join Main Channel", url="https://t.me/Deals_and_Discounts_Channel/37444")]
+        [[InlineKeyboardButton("Deals HUB 🛒", url="https://t.me/addlist/FReIeSd3Hyg5NjJl"),InlineKeyboardButton("PriceHistory Deals 📉", url="https://t.me/+rTx5B9g6XYxmNmE1")],
+         [InlineKeyboardButton("Main Channel 🔴", url="https://t.me/+HeHY-qoy3vsxYWU1")]
          ])
+    Promo2 = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("Deals HUB 🛒", url="https://t.me/addlist/FReIeSd3Hyg5NjJl")],
+         [InlineKeyboardButton("Main Channel 🔴", url="https://t.me/+HeHY-qoy3vsxYWU1")]
+         ])
+    
     if message.photo:
         text = message.caption if message.caption else message.text
         inputvalue = text
@@ -158,11 +176,11 @@ async def handle_text(client, message):
 
         inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
         if "😱 Deal Time" in inputvalue:
-        # Remove the part
+            # Remove the part
             inputvalue = inputvalue.split("😱 Deal Time")[0]
         if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
-            inputvalue=extp(inputvalue)
-        
+            inputvalue = extp(inputvalue)
+
         # print(inputvalue)
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             # app.download_media(message)
@@ -173,7 +191,7 @@ async def handle_text(client, message):
         msgtext = ekconvert(inputvalue)
         await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
         await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
-                            reply_markup=Promo)
+                             reply_markup=Promo)
 
     elif message.text:
         inputvalue = message.text
@@ -190,15 +208,35 @@ async def handle_text(client, message):
         inputvalue = pattern.sub(lambda x: hyperlinkurl.pop(0), inputvalue).replace('Regular Price', 'MRP')
 
         if "😱 Deal Time" in inputvalue:
-        # Remove the part
+            # Remove the part
             inputvalue = inputvalue.split("😱 Deal Time")[0]
         if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
-            inputvalue=extp(inputvalue)
-        msgtext=ekconvert(inputvalue)
+            inputvalue = extp(inputvalue)
+        msgtext = ekconvert(inputvalue)
 
         await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
         await app.send_message(chat_id=-1002110764294, text=f'<b>{msgtext}</b>',
                                disable_web_page_preview=True)
+    if message.video:
+        if message.caption:
+            link=unshorten_url(extract_link_from_text(message.caption)[0])
+            link=create_amazon_affiliate_url(remove_amazon_affiliate_parameters(link),'divyadeal-21')
+        else
+            link='https://amzn.to/3Vgst6o'
+
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            # app.download_media(message)
+            await message.download(file_name=temp_file.name)
+
+            with open(temp_file.name, 'rb') as f:
+                video_bytes = BytesIO(f.read())
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video_file:
+                temp_video_file.write(video_bytes.getvalue())
+                temp_video_file.seek(0)
+
+        # await app.send_video(chat_id=message.chat.id, video=temp_video_file.name, caption=message.caption,reply_markup=Promo)
+        await app.send_video(chat_id=-1002194362897, video=temp_video_file.name, caption=f"<b>PRODUCT LINK: \n\n{link}</b>",reply_markup=Promo2)
+
 
 
 @bot.before_serving
@@ -210,9 +248,10 @@ async def before_serving():
 async def after_serving():
     await app.stop()
 
+
 # if __name__ == '__main__':
 
-    # bot.run(port=8000)
+# bot.run(port=8000)
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.create_task(bot.run_task(host='0.0.0.0', port=8090))
