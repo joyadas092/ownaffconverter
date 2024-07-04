@@ -220,7 +220,7 @@ async def handle_text(client, message):
     if message.video:
         if message.caption:
             link=unshorten_url(extract_link_from_text(message.caption)[0])
-            link=ekconvert(link)
+            # link=ekconvert(link)
         else:
             link='https://amzn.to/3Vgst6o'
 
@@ -235,7 +235,7 @@ async def handle_text(client, message):
                 temp_video_file.seek(0)
 
         # await app.send_video(chat_id=message.chat.id, video=temp_video_file.name, caption=message.caption,reply_markup=Promo)
-        await app.send_video(chat_id=-1002194362897, video=temp_video_file.name, caption=f"<b>PRODUCT LINK: \n\n{link}</b>\n\n#amazon #flipkart #meesho",reply_markup=Promo2)
+        await app.send_video(chat_id=-1002194362897, video=temp_video_file.name, caption=f"<b>PRODUCT LINK ⏬⏬: \n\n<a href={link}>👉👉BUY ON AMAZON👈👈</a></b>\n\n#amazon #flipkart #meesho",reply_markup=Promo2)
 
 
 
