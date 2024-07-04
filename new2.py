@@ -219,7 +219,7 @@ async def handle_text(client, message):
                                disable_web_page_preview=True)
     if message.video:
         if message.caption:
-            link=create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(extract_link_from_text(message.caption)[0]),'divyadeal-21'))
+            link=create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(extract_link_from_text(message.caption)[0])),'divyadeal-21')
             # link=create_amazon_affiliate_url(remove_amazon_affiliate_parameters(), 'divyadeal-21'))
         else:
             link='https://amzn.to/3Vgst6o'
