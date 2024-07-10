@@ -130,8 +130,9 @@ def ekconvert(text):
     urls = extract_link_from_text(text)
     for url in urls:
         if 'amazon' in url or 'tinyurl' in url or 'amzn' in url:
-            unshortened_urls[url] = tiny(
-                create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(url)), 'divyadeal-21'))
+            # unshortened_urls[url] = tiny(
+            #     create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(url)), 'divyadeal-21'))
+             unshortened_urls[url] = create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(url)), 'divyadeal-21')
         else:
             unshortened_urls[url] = earnkaroapi(url)
     for original_url, unshortened_url in unshortened_urls.items():
