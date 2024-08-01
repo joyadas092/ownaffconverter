@@ -40,7 +40,7 @@ def remove_amazon_affiliate_parameters(url):
 
     # List of Amazon affiliate parameters to remove
     amazon_affiliate_params = ['tag', 'ref', 'linkCode', 'camp', 'creative', 'linkId', 'ref_', 'language', 'content-id',
-                               '_encoding','dev','sprefix','srs','crid']
+                               '_encoding','dev','sprefix','srs','crid','smid','sid']
 
     # Remove the Amazon affiliate parameters from the query parameters
     cleaned_query_params = {key: value for key, value in query_params.items() if key not in amazon_affiliate_params}
