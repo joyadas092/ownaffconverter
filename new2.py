@@ -192,7 +192,11 @@ async def handle_text(client, message):
                 photo_bytes = BytesIO(f.read())
         msgtext = ekconvert(inputvalue)
         await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
-        await app.send_photo(chat_id=-1002198032644, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
+        if 'amazon.in' in msgtext:
+            await app.send_message(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
+                             reply_markup=Promo)
+        else:
+            await app.send_photo(chat_id=-1002198032644, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
                              reply_markup=Promo)
 
     elif message.text:
@@ -217,8 +221,13 @@ async def handle_text(client, message):
         msgtext = ekconvert(inputvalue)
 
         await app.send_message(message.chat.id, text=msgtext, disable_web_page_preview=True)
-        await app.send_message(chat_id=-1002198032644, text=f'<b>{msgtext}</b>',
+
+        if 'amazon.in' in msgtext:
+            await app.send_message(chat_id=-1002110764294, text=f'<b>{msgtext}</b>',
                                disable_web_page_preview=True)
+        else:
+            await app.send_message(chat_id=-1002198032644, text=f'<b>{msgtext}</b>',
+                                   disable_web_page_preview=True)
     if message.video:
         if message.caption:
             link=create_amazon_affiliate_url(remove_amazon_affiliate_parameters(unshorten_url(extract_link_from_text(message.caption)[0])),'divyadeal-21')
