@@ -193,7 +193,7 @@ async def handle_text(client, message):
         msgtext = ekconvert(inputvalue)
         await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
         if 'amazon.in' in msgtext:
-            await app.send_message(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
+            await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
                              reply_markup=Promo)
         else:
             await app.send_photo(chat_id=-1002198032644, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
