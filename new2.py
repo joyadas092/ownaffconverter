@@ -190,7 +190,7 @@ async def handle_text(client, message):
         #     with open(temp_file.name, 'rb') as f:
         #         photo_bytes = BytesIO(f.read())
         msgtext = ekconvert(inputvalue)
-        await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
+        await app.send_photo(message.chat.id, photo=message.photo.file_id, caption=msgtext)
         if 'amazon.in' in msgtext:
             await app.send_photo(chat_id=-1002110764294, photo=message.photo.file_id, caption=f'<b>{msgtext}</b>',
                              reply_markup=Promo)
