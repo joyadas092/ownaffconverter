@@ -1,5 +1,4 @@
 import json
-import tempfile
 from io import BytesIO
 
 import requests
@@ -183,20 +182,20 @@ async def handle_text(client, message):
         if 'extp' in inputvalue or 'myntr.in' in inputvalue or 'fkrt.co' in inputvalue:
             inputvalue = extp(inputvalue)
 
-        # print(inputvalue)
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            # app.download_media(message)
-            await message.download(file_name=temp_file.name)
+        # # print(inputvalue)
+        # with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        #     # app.download_media(message)
+        #     await message.download(file_name=temp_file.name)
 
-            with open(temp_file.name, 'rb') as f:
-                photo_bytes = BytesIO(f.read())
+        #     with open(temp_file.name, 'rb') as f:
+        #         photo_bytes = BytesIO(f.read())
         msgtext = ekconvert(inputvalue)
         await app.send_photo(message.chat.id, photo=photo_bytes, caption=msgtext)
         if 'amazon.in' in msgtext:
-            await app.send_photo(chat_id=-1002110764294, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
+            await app.send_photo(chat_id=-1002110764294, photo=message.photo.file_id, caption=f'<b>{msgtext}</b>',
                              reply_markup=Promo)
         else:
-            await app.send_photo(chat_id=-1002198032644, photo=photo_bytes, caption=f'<b>{msgtext}</b>',
+            await app.send_photo(chat_id=-1002198032644, photo=message.photo.file_id, caption=f'<b>{msgtext}</b>',
                              reply_markup=Promo)
 
     elif message.text:
@@ -235,18 +234,18 @@ async def handle_text(client, message):
         else:
             link='https://amzn.to/3Vgst6o'
 
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            # app.download_media(message)
-            await message.download(file_name=temp_file.name)
+        # with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        #     # app.download_media(message)
+        #     await message.download(file_name=temp_file.name)
 
-            with open(temp_file.name, 'rb') as f:
-                video_bytes = BytesIO(f.read())
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video_file:
-                temp_video_file.write(video_bytes.getvalue())
-                temp_video_file.seek(0)
+        #     with open(temp_file.name, 'rb') as f:
+        #         video_bytes = BytesIO(f.read())
+        #     with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video_file:
+        #         temp_video_file.write(video_bytes.getvalue())
+        #         temp_video_file.seek(0)
 
         # await app.send_video(chat_id=message.chat.id, video=temp_video_file.name, caption=message.caption,reply_markup=Promo)
-        await app.send_video(chat_id=-1002194362897, video=temp_video_file.name, caption=f"<b>PRODUCT LINK ⏬⏬: \n\n<a href={link}>👉👉BUY ON AMAZON👈👈</a></b>\n\n#amazon #flipkart #meesho",reply_markup=Promo2)
+        await app.send_video(chat_id=-1002194362897, video=message.video.file_id, caption=f"<b>PRODUCT LINK ⏬⏬: \n\n<a href={link}>👉👉BUY ON AMAZON👈👈</a></b>\n\n#amazon #flipkart #meesho",reply_markup=Promo2)
 
 
 
