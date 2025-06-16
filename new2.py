@@ -15,7 +15,7 @@ from unshortenit import UnshortenIt
 
 api_id = '26566076'
 api_hash = '40ce27837b95819c42cac67b46a2dc2b'
-bot_token = '6866466311:AAGUUwhtOEpgAG4NPXVclZToG2FYhbkhvG0'
+bot_token = '6866466311:AAE2ImW0ayRDQyZzbj7DHcfhX-r0qOPkSU8'
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 apitoken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2M2U2MjEwNjYwOWU1YWY4ZTc4OTU2NTEiLCJlYXJua2FybyI6IjI1MjM2ODEiLCJpYXQiOjE3MTQzMzcxMDZ9.WOP7a-VJpEvg5p1sOpujkFJlcGjk50rq55ixeyHunK4'
 
