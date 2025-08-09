@@ -88,5 +88,6 @@ async def send_links(client, message):
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.create_task(bot.run())  # Start Pyrogram bot
-    loop.create_task(app.run_task(host="0.0.0.0", port=8090))  # Start Quart server
+    loop.create_task(app.run_task(host="0.0.0.0", port=8080))  # Start Quart server
     loop.run_forever()
+
