@@ -67,13 +67,13 @@ def generate_search_links(keyword: str):
 
 
 # /start command
-@bot.on_message(filters.private & (filters.command("start") or filters.regex('start')))
+@bot.on_message(filters.private & filters.incoming & (filters.command("start") | filters.regex('start')))
 async def start_cmd(client, message):
     await message.reply(f"👋 Welcome {message.from_user.first_name}!  from @lootsxpert \n\nSend me a product name or keyword and I'll give you search links from all Platforms.\n\n"
                         "Example: Enter <b><i>Smartwatch</i></b> or <b><i>Jeans under 500</i></b> or <b><i>Laptops </i></b>")
 
 # Handle keywords
-@bot.on_message(filters.private & filters.text & ~filters.command("start"))
+@bot.on_message(filters.private & filters.incoming & filters.text & ~filters.command("start"))
 async def send_links(client, message):
     keyword = message.text.strip()
     # print(f"🔍 Query from {message.from_user.id}: {keyword}")
@@ -98,3 +98,4 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.create_task(app.run_task(host='0.0.0.0', port=8080))
     loop.run_forever()
+
