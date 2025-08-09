@@ -84,10 +84,17 @@ async def send_links(client, message):
     affiliate_text = generate_search_links(keyword)
     await message.reply(f'<b>{affiliate_text}</b>', disable_web_page_preview=True)
 
-# Run bot + quart together
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(bot.run())  # Start Pyrogram bot
-    loop.create_task(app.run_task(host="0.0.0.0", port=8080))  # Start Quart server
-    loop.run_forever()
 
+@app.before_serving
+async def before_serving():
+    await bot.start()
+
+
+@app.after_serving
+async def after_serving():
+    await bot.stop()
+# Run bot + quart together
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.create_task(app.run_task(host='0.0.0.0', port=8080))
+    loop.run_forever()
