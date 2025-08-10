@@ -66,11 +66,11 @@ def earnkaroapi(text):
 
 def generate_search_links(keyword: str):
     encoded_kw = urllib.parse.quote(keyword)
-    print(encoded_kw)
+    # print(encoded_kw)
     # Step 1: Create full text block
     amznEcomLink=tiny(create_amazon_affiliate_url(f"https://www.amazon.in/s?k={encoded_kw}",'highfivesto0c-21'))
     amznQcomLink=tiny(create_amazon_affiliate_url(f"https://www.amazon.in/s?k={encoded_kw}&i=nowstore",'highfivesto0c-21'))
-    print(amznQcomLink,amznEcomLink)
+    # print(amznQcomLink,amznEcomLink)
     IntialText=  (f"🔍 Found your Query '{keyword}' from Amazon, Flipkart, Myntra, Ajio and More:\n\n"
         f"Some Platforms may not have your products.So Check Accordingly \n\n"
         f"<b><U>E-Commerce 👇👇</U></b>\n"
@@ -135,3 +135,4 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.create_task(app.run_task(host='0.0.0.0', port=8080))
     loop.run_forever()
+
