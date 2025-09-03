@@ -66,7 +66,7 @@ def earnkaroapi(text):
 
 def generate_search_links(keyword: str):
     encoded_kw = urllib.parse.quote(keyword)
-    # print(encoded_kw)
+    print(encoded_kw)
     # Step 1: Create full text block
     amznEcomLink=tiny(create_amazon_affiliate_url(f"https://www.amazon.in/s?k={encoded_kw}",'highfivesto0c-21'))
     amznQcomLink=tiny(create_amazon_affiliate_url(f"https://www.amazon.in/s?k={encoded_kw}&i=nowstore",'highfivesto0c-21'))
@@ -81,7 +81,6 @@ def generate_search_links(keyword: str):
         f"Ajio → https://www.ajio.com/search/?text={encoded_kw}\n"
         f"Myntra → https://www.myntra.com/{encoded_kw.replace('%20', '-')}\n"
         f"Reliance Digital → https://www.reliancedigital.in/products?q={encoded_kw}\n"
-        f"JioMart → https://www.jiomart.com/search/{encoded_kw}\n"
         f"Croma → https://www.croma.com/searchB?q={encoded_kw}%3Arelevance&text={encoded_kw}\n\n"
         f"<b><U>Quick-Commerce 👇👇</U></b>(Check Your PIN)\n"
         f"Flipkart Minutes → https://www.flipkart.com/hyperlocal/pr?q={encoded_kw}&marketplace=HYPERLOCAL&sid=search.flipkart.com\n"
@@ -91,6 +90,7 @@ def generate_search_links(keyword: str):
     affiliate_text = earnkaroapi(earnkaro_text)
     QCom_search_text=(
     f"Amazon Fresh → {amznQcomLink}\n"
+    f"JioMart → <a href='https://www.jiomart.com/search/?q={encoded_kw}'> Click Here</a>\n"
     f"Blinkit → <a href='https://blinkit.com/s/?q={encoded_kw}'> Click Here</a>\n"
     f"Instamart → <a href='https://www.swiggy.com/instamart/search?query={encoded_kw}'> Click Here</a>\n"
     f"Zepto → <a href='https://www.zeptonow.com/search?query={encoded_kw}'> Click Here</a>\n"
@@ -100,13 +100,17 @@ def generate_search_links(keyword: str):
 
 
 # /start command
-@bot.on_message(filters.private & filters.command("start") & filters.incoming)
+@bot.on_message(filters.private and filters.command("start"))
 async def start_cmd(client, message):
+    text = message.caption if message.caption else message.text
+    if 'Livegram' in text or 'You cannot forward someone' in text:
+        await message.delete()
+        return None
     await message.reply(f"👋 Welcome {message.from_user.first_name}!  from @lootsxpert \n\nSend me a product name or keyword and I'll give you search links from all Platforms.\n\n"
                         "Example: Enter <b><i>Smartwatch</i></b> or <b><i>Jeans under 500</i></b> or <b><i>Laptops </i></b>")
 
 # Handle keywords
-@bot.on_message(filters.private & ~filters.command("start"))
+@bot.on_message(filters.private  and filters.incoming and ~filters.command("start") and ~filters.regex('start'))
 async def send_links(client, message):
     text = message.caption if message.caption else message.text
     if 'Livegram' in text or 'You cannot forward someone' in text:
@@ -118,8 +122,13 @@ async def send_links(client, message):
         await message.reply("❌ Please enter a product name or keyword.")
         return
     # a=await bot.send_dice(chat_id=message.chat.id)
+    a=await bot.send_message(chat_id=message.chat.id,text='🔍')
+    # await asyncio.sleep(15)
+
     affiliate_text = generate_search_links(keyword)
     await message.reply(f'<b>{affiliate_text}</b>', disable_web_page_preview=True)
+    await a.delete()
+
 
 
 @app.before_serving
@@ -135,4 +144,5 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.create_task(app.run_task(host='0.0.0.0', port=8080))
     loop.run_forever()
+
 
