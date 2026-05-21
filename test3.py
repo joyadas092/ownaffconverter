@@ -3,7 +3,8 @@ import urllib.parse
 import asyncio
 import json
 import requests
-from pyrogram import Client, filters
+import re
+from pyrogram import Client, filters, StopPropagation
 from dotenv import load_dotenv
 from quart import Quart
 from pyrogram import enums
@@ -25,6 +26,46 @@ app = Quart(__name__)
 @app.route("/")
 async def home():
     return {"status": "running", "message": "Affiliate Search Bot is alive!"}
+
+URL_RE = re.compile(
+    r"(?:https?://|www\.|t\.me/|telegram\.me/|amzn\.to/|bit\.ly/|tinyurl\.com/|(?:[a-z0-9-]+\.)+(?:com|in|net|org|co)(?:/\S*)?)\S*",
+    re.IGNORECASE,
+)
+GREETING_RE = re.compile(
+    r"^(?:(?:hi+|hii+|hello+|hey+|hola|namaste|thanks?|thank\s+you)\W*)+$|^/?start\W*$",
+    re.IGNORECASE,
+)
+LIVEGRAM_RE = re.compile(
+    r"(?:livegram|livegrambot|bot\s+not\s+responds|deals_hub_bot|this\s+bot\s+was\s+made\s+using)",
+    re.IGNORECASE,
+)
+
+def get_message_text(message):
+    return (message.caption or message.text or "").strip()
+
+def should_ignore_message(message):
+    text = get_message_text(message)
+    if message.chat.type != enums.ChatType.PRIVATE:
+        return True
+    if not text:
+        return True
+    if 'Livegram' in text or 'You cannot forward someone' in text:
+        return True
+    if URL_RE.search(text):
+        return True
+    if GREETING_RE.fullmatch(text):
+        return True
+    return False
+
+def should_delete_livegram_message(message):
+    return bool(LIVEGRAM_RE.search(get_message_text(message)))
+
+async def delete_message_safely(message):
+    try:
+        await message.delete()
+    except Exception as e:
+        print(f"Could not delete message {message.id}: {e}")
+
 def create_amazon_affiliate_url(normal_url, affiliate_tag):
     if "amazon" not in normal_url:
         return "Not a valid Amazon Product link."
@@ -70,6 +111,7 @@ def generate_search_links(keyword: str):
     # Step 1: Create full text block
     amznEcomLink=tiny(create_amazon_affiliate_url(f"https://www.amazon.in/s?k={encoded_kw}",'highfivesto0c-21'))
     amznQcomLink=tiny(create_amazon_affiliate_url(f"https://www.amazon.in/s?k={encoded_kw}&i=nowstore",'highfivesto0c-21'))
+    amznTezLink=tiny(create_amazon_affiliate_url(f"https://www.amazon.in/tez/browse/search?qcbrand=qqfsWw9RkO&searchKeyword={encoded_kw}",'highfivesto0c-21'))
     # print(amznQcomLink,amznEcomLink)
     IntialText=  (f"🔍 Found your Query '{keyword}' from Amazon, Flipkart, Myntra, Ajio and More:\n\n"
         f"Some Platforms may not have your products.So Check Accordingly \n\n"
@@ -89,6 +131,7 @@ def generate_search_links(keyword: str):
     # Step 2: Convert all links at once
     affiliate_text = earnkaroapi(earnkaro_text)
     QCom_search_text=(
+    f"Amazon Tez -> {amznTezLink}\n"
     f"Amazon Fresh → {amznQcomLink}\n"
     f"JioMart → <a href='https://www.jiomart.com/search/?q={encoded_kw}'> Click Here</a>\n"
     f"Blinkit → <a href='https://blinkit.com/s/?q={encoded_kw}'> Click Here</a>\n"
@@ -99,22 +142,43 @@ def generate_search_links(keyword: str):
     # return search_text
 
 
-# /start command
-@bot.on_message(filters.private and filters.command("start"))
+# Delete Livegram footer/promo messages wherever they appear.
+@bot.on_message(group=-1)
+async def delete_livegram_footer(client, message):
+    if should_delete_livegram_message(message):
+        await delete_message_safely(message)
+        raise StopPropagation
+
+
+@bot.on_message(filters.private & filters.command("start"))
 async def start_cmd(client, message):
-    text = message.caption if message.caption else message.text
-    if 'Livegram' in text or 'You cannot forward someone' in text:
-        await message.delete()
+    text = get_message_text(message)
+    if message.chat.type != enums.ChatType.PRIVATE:
+        return None
+    if should_delete_livegram_message(message) or 'You cannot forward someone' in text:
+        await delete_message_safely(message)
         return None
     await message.reply(f"👋 Welcome {message.from_user.first_name}!  from @lootsxpert \n\nSend me a product name or keyword and I'll give you search links from all Platforms.\n\n"
                         "Example: Enter <b><i>Smartwatch</i></b> or <b><i>Jeans under 500</i></b> or <b><i>Laptops </i></b>")
 
+
 # Handle keywords
-@bot.on_message(filters.private  and filters.incoming and ~filters.command("start") and ~filters.regex('start'))
+@bot.on_message(filters.private & filters.incoming & ~filters.command("start") & ~filters.regex('start'))
 async def send_links(client, message):
-    text = message.caption if message.caption else message.text
-    if 'Livegram' in text or 'You cannot forward someone' in text:
-        await message.delete()
+    if should_delete_livegram_message(message):
+        await delete_message_safely(message)
+        return None
+    text = get_message_text(message)
+    if URL_RE.search(text):
+        await message.reply(
+            "Please send a product name or keyword, not a link.\n\n"
+            "Examples:\n"
+            "<b>Smartwatch</b>\n"
+            "<b>Jeans under 500</b>\n"
+            "<b>Cooking oil</b>"
+        )
+        return None
+    if should_ignore_message(message):
         return None
     keyword = text.strip()
     # print(f"🔍 Query from {message.from_user.id}: {keyword}")
@@ -144,5 +208,4 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.create_task(app.run_task(host='0.0.0.0', port=8080))
     loop.run_forever()
-
 
