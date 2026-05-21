@@ -195,14 +195,17 @@ async def send_links(client, message):
 
 
 
-@app.before_serving
+@bot.before_serving
 async def before_serving():
-    await bot.start()
+    await app.start()
+    await app.send_message(chat_id= 5886397642, text='Bot starting')
 
 
-@app.after_serving
+@bot.after_serving
 async def after_serving():
-    await bot.stop()
+    await app.send_message(chat_id= 5886397642, text='Bot Stopping')
+    await app.stop()
+    
 # Run bot + quart together
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
