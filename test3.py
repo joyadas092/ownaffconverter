@@ -197,14 +197,14 @@ async def send_links(client, message):
 
 @bot.before_serving
 async def before_serving():
-    await app.start()
-    await app.send_message(chat_id= 5886397642, text='Bot starting')
+    await bot.start()
+    await bot.send_message(chat_id= 5886397642, text='Bot starting')
 
 
 @bot.after_serving
 async def after_serving():
-    await app.send_message(chat_id= 5886397642, text='Bot Stopping')
-    await app.stop()
+    await bot.send_message(chat_id= 5886397642, text='Bot Stopping')
+    await bot.stop()
     
 # Run bot + quart together
 if __name__ == '__main__':
